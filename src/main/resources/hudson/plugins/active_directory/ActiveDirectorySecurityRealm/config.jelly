@@ -17,6 +17,9 @@
         <f:entry field="bindPassword" title="${%Bind Password}">
           <f:password />
         </f:entry>
+        <f:entry field="appendDomainToUsername" title="${%Append domain to username}">
+            <f:checkbox />
+        </f:entry>
       </f:advanced>
       <f:nested>
         <f:validateButton with="domain,site,bindName,bindPassword,server" title="${%Test}" method="validate"/>

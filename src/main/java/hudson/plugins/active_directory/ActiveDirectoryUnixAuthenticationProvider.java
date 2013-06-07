@@ -56,6 +56,8 @@ public class ActiveDirectoryUnixAuthenticationProvider extends AbstractActiveDir
 
     private final ActiveDirectorySecurityRealm.DescriptorImpl descriptor;
 
+	private boolean appendDomainToUsername;
+
     /**
      * {@link ActiveDirectoryGroupDetails} cache.
      */
@@ -122,6 +124,7 @@ public class ActiveDirectoryUnixAuthenticationProvider extends AbstractActiveDir
         this.server = realm.server;
         this.bindPassword = Secret.toString(realm.bindPassword);
         this.descriptor = realm.getDescriptor();
+	    this.appendDomainToUsername = realm.appendDomainToUsername;
     }
 
     protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
@@ -222,6 +225,7 @@ public class ActiveDirectoryUnixAuthenticationProvider extends AbstractActiveDir
     public UserDetails retrieveUser(String username, String password, String domainName, List<SocketInfo> ldapServers) {
         DirContext context;
         String id;
+	    String principalName;
         boolean anonymousBind;    // did we bind anonymously?
 
         // LDAP treats empty password as anonymous bind, so we need to reject it
@@ -233,13 +237,14 @@ public class ActiveDirectoryUnixAuthenticationProvider extends AbstractActiveDir
             // user trying to login, then authenticate.
             try {
                 id = username;
+	            principalName = id;
                 context = descriptor.bind(bindName, bindPassword, ldapServers);
                 anonymousBind = false;
             } catch (BadCredentialsException e) {
                 throw new AuthenticationServiceException("Failed to bind to LDAP server with the bind name/password", e);
             }
         } else {
-            String principalName = getPrincipalName(username, domainName);
+            principalName = getPrincipalName(username, domainName);
             id = principalName.substring(0, principalName.indexOf('@'));
             anonymousBind = password == NO_AUTHENTICATION;
             try {
@@ -292,6 +297,10 @@ public class ActiveDirectoryUnixAuthenticationProvider extends AbstractActiveDir
 
             Set<GrantedAuthority> groups = resolveGroups(domainDN, dn.toString(), context);
             groups.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
+
+            if (appendDomainToUsername && !id.contains("@")) {
+                id = principalName;
+            }
 
             return new ActiveDirectoryUserDetail(id, password, true, true, true, true, groups.toArray(new GrantedAuthority[groups.size()]),
                     getStringAttribute(user, "displayName"),

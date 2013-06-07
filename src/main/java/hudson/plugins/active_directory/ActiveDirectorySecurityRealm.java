@@ -107,12 +107,18 @@ public class ActiveDirectorySecurityRealm extends AbstractPasswordBasedSecurityR
      */
     public final String server;
 
+	/**
+	 * When true, append the domain name to the username in the form user@domain
+	 */
+	public final boolean appendDomainToUsername;
+
     @DataBoundConstructor
-    public ActiveDirectorySecurityRealm(String domain, String site, String bindName, String bindPassword, String server) {
+    public ActiveDirectorySecurityRealm(String domain, String site, String bindName, String bindPassword, String server, boolean appendDomainToUsername) {
         this.domain = fixEmpty(domain);
         this.site = fixEmpty(site);
         this.bindName = fixEmpty(bindName);
         this.bindPassword = Secret.fromString(fixEmpty(bindPassword));
+	    this.appendDomainToUsername = appendDomainToUsername;
 
         // append default port if not specified
         server = fixEmpty(server);
