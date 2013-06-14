@@ -356,6 +356,11 @@ public class ActiveDirectoryUnixAuthenticationProvider extends AbstractActiveDir
      */
     private String getPrincipalName(String username, String domainName) {
         String principalName;
+
+	    if (appendDomainToUsername && username.contains("@")) {
+	        username = username.split("@")[0];
+	    }
+
         int slash = username.indexOf('\\');
         if (slash>0) {
             principalName = username.substring(slash+1)+'@'+username.substring(0, slash)+'.'+domainName;
