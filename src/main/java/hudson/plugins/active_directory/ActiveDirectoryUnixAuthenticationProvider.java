@@ -299,7 +299,7 @@ public class ActiveDirectoryUnixAuthenticationProvider extends AbstractActiveDir
             groups.add(SecurityRealm.AUTHENTICATED_AUTHORITY);
 
             if (appendDomainToUsername && !id.contains("@")) {
-                id = principalName;
+                id = id + "@" + domainName;
             }
 
             return new ActiveDirectoryUserDetail(id, password, true, true, true, true, groups.toArray(new GrantedAuthority[groups.size()]),
